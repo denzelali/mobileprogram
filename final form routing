@@ -1,0 +1,122 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MainPage());
+}
+
+class MainPage extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: FirstPage(),
+    );
+  }
+}
+
+class FirstPage extends StatefulWidget {
+  @override
+  _FirstPageState createState() => _FirstPageState();
+}
+
+class _FirstPageState extends State<FirstPage> {
+
+  var formKey = GlobalKey<FormState>();
+  String email = "";
+  String password = "";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.deepPurple,
+        title: const Text('Login'),
+        leading: const Icon(Icons.code),
+      ),
+      body: Form(
+          key: formKey,
+          child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                TextFormField(
+                  keyboardType: TextInputType.emailAddress,
+                  onChanged: (value) {
+                    setState(() {
+                      email = value;
+                    });
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "Email Address",
+                  ),
+                ),
+                TextFormField(
+                  obscureText: true,
+                  onChanged: (value) {
+                    setState(() {
+                      password = value;
+                    });
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "Password",
+                  ),
+                ),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                      print("Email: $email");
+                      print("Password: $password");
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SecondPage(name: email, password: password)
+                          )
+                      );
+                    }
+                  },
+                  child: const Text("Submit"),
+
+                ),
+              ]
+          )
+      ),
+    );
+  }
+}
+
+class SecondPage extends StatelessWidget {
+
+  String? name;
+  String? password;
+
+  SecondPage ({this.name, this.password});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold (
+        appBar: AppBar(
+            backgroundColor: Colors.pink,
+            title: const Text ('Second page')
+        ),
+        body: ListView (
+            padding: const EdgeInsets.all(20),
+            children: [
+              Text('This is your email and password',
+                  textAlign: TextAlign.center
+              ),
+              Text('Email: $name'),
+              Text('Password: $password'),
+              const SizedBox (height: 20),
+              OutlinedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Go back to first page')
+              ),
+            ]
+        )
+    );
+  }
+}
