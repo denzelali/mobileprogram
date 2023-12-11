@@ -1,0 +1,112 @@
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+void main() {
+ runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+ const MyApp({super.key});
+
+ @override
+ Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: FlexColorScheme.dark(
+        appBarStyle: FlexAppBarStyle.custom,
+        appBarElevation: 0,
+        background: const Color.fromARGB(255, 77, 10, 10),
+      ).toTheme,
+      debugShowCheckedModeBanner: false,
+      home: const Home(),
+    );
+ }
+}
+
+class Home extends StatefulWidget {
+ const Home({super.key});
+
+ @override
+ State<Home> createState() => HomeState();
+}
+
+class HomeState extends State<Home> {
+ Future<List<dynamic>> getPosts() async {
+    var url =
+        Uri.parse('https://jsonplaceholder.typicode.com/photos?_limit=21');
+
+    var response = await http.get(url);
+
+    return json.decode(response.body);
+ }
+
+ @override
+ Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          leading: const Icon(Icons.image),
+          title: const Text("Image Gallery"),
+        ),
+        body: FutureBuilder<List<dynamic>>(
+          future: getPosts(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 5.0,
+                    mainAxisSpacing: 5.0
+                ),
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                 return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SecondPage(
+                            imageUrl: snapshot.data![index]['thumbnailUrl'],
+                          ),
+                        ),
+                      );
+                    },
+                    child: CachedNetworkImage(
+                      imageUrl: snapshot.data![index]['thumbnailUrl'],
+                      placeholder: (context, url) => const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                    ),
+                 );
+                },
+              );
+            } else if (snapshot.hasError) {
+              return Center(child: Text('${snapshot.error}'));
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
+        ));
+ }
+}
+
+class SecondPage extends StatelessWidget {
+ final String imageUrl;
+
+ const SecondPage({Key? key, required this.imageUrl}) : super(key: key);
+
+ @override
+ Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Image viewer'),
+      ),
+      body: Center(
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          placeholder: (context, url) => const CircularProgressIndicator(),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
+        ),
+      ),
+    );
+ }
+}
